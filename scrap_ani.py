@@ -1,34 +1,18 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+from urllib.request import Request, urlopen
+from bs4 import BeautifulSoup as soup
 
-linkuri = []
-
-options = Options()
-options.add_argument("--window-size=600,400")
 f = open("turnee.txt", "w")
 f.close()
-for year in range(1915, 2022):
-    browser = webdriver.Chrome(options=options)
+
+
+for year in range(1920, 2022):
     url = 'https://www.atptour.com/en/scores/results-archive?year=' + str(year)
-    browser.get(url)
-    all_links = browser.find_elements_by_class_name('button-border')
-    for element in all_links:
-        a = element.get_attribute('outerHTML')
-        start = False
-        link = ""
-        for l in a:
-            if l == '"' and not start:
-                start = True
-                continue
-            if l == '"' and start:
-                break
-            if start:
-                link += l
-        link = "https://www.atptour.com" + link
-        linkuri.append(link)
+    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+
+    webpage = urlopen(req).read()
+    sursa = soup(webpage, "html.parser")
+    turnee = sursa.find_all("a", class_="button-border")
     f = open("turnee.txt", "a")
-    for link in linkuri:
-        linie = "\n" + link
-        f.write(linie)
+    for turneu in turnee:
+        f.write('\n' + str(turneu['href']))
     f.close()
-    browser.quit()
